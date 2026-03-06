@@ -72,12 +72,10 @@ export default function TimeOutScreen() {
       let photo: any;
       
       if (Platform.OS === 'web') {
-        // On web, convert the URI to a Blob
         const response = await fetch(uri);
         const blob = await response.blob();
         photo = new File([blob], `time_out_${Date.now()}.jpg`, { type: 'image/jpeg' });
       } else {
-        // On native, use the standard format
         photo = {
           uri,
           type: 'image/jpeg',
@@ -86,21 +84,23 @@ export default function TimeOutScreen() {
       }
 
       await apiService.timeOut(photo);
-      
-      Alert.alert(
-        'Success',
-        'Time out recorded successfully!',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ]
-      );
-    } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to record time out');
-    } finally {
       setIsLoading(false);
+      
+      if (Platform.OS === 'web') {
+        alert('Time out recorded successfully!');
+        navigation.goBack();
+      } else {
+        Alert.alert('Success', 'Time out recorded successfully!', [
+          { text: 'OK', onPress: () => navigation.goBack() }
+        ]);
+      }
+    } catch (error: any) {
+      setIsLoading(false);
+      if (Platform.OS === 'web') {
+        alert(error.message || 'Failed to record time out');
+      } else {
+        Alert.alert('Error', error.message || 'Failed to record time out');
+      }
     }
   };
 

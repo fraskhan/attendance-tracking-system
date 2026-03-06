@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../navigation/types';
 import { apiService } from '../services/api';
+import { authService } from '../services/auth';
 
 type ChangePasswordScreenProps = {
   navigation: NativeStackNavigationProp<AuthStackParamList, 'ChangePassword'>;
@@ -33,31 +34,56 @@ export default function ChangePasswordScreen({ navigation, onPasswordChanged }: 
 
   const handleChangePassword = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
+      if (Platform.OS === 'web') {
+        alert('Please fill in all fields');
+      } else {
+        Alert.alert('Error', 'Please fill in all fields');
+      }
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert('Error', 'New passwords do not match');
+      if (Platform.OS === 'web') {
+        alert('New passwords do not match');
+      } else {
+        Alert.alert('Error', 'New passwords do not match');
+      }
       return;
     }
 
     const validationError = validatePassword(newPassword);
     if (validationError) {
-      Alert.alert('Invalid Password', validationError);
+      if (Platform.OS === 'web') {
+        alert(validationError);
+      } else {
+        Alert.alert('Invalid Password', validationError);
+      }
       return;
     }
 
     setLoading(true);
     try {
       await apiService.changePassword(currentPassword, newPassword);
-      Alert.alert('Success', 'Password changed successfully', [
-        { text: 'OK', onPress: onPasswordChanged }
-      ]);
-    } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to change password');
-    } finally {
+      await authService.clearAuth();
       setLoading(false);
+      
+      if (Platform.OS === 'web') {
+        alert('Password changed successfully. Please login again with your new password.');
+        navigation.navigate('Login');
+      } else {
+        Alert.alert(
+          'Success', 
+          'Password changed successfully. Please login again with your new password.', 
+          [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
+        );
+      }
+    } catch (error: any) {
+      setLoading(false);
+      if (Platform.OS === 'web') {
+        alert(error.message || 'Failed to change password');
+      } else {
+        Alert.alert('Error', error.message || 'Failed to change password');
+      }
     }
   };
 

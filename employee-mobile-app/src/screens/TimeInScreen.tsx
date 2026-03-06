@@ -74,14 +74,10 @@ export default function TimeInScreen() {
       let photo: any;
       
       if (Platform.OS === 'web') {
-        // On web, convert the URI to a Blob
-        console.log('Converting web image:', uri);
         const response = await fetch(uri);
         const blob = await response.blob();
         photo = new File([blob], `time_in_${Date.now()}.jpg`, { type: 'image/jpeg' });
-        console.log('Created File object:', photo.name, photo.size, 'bytes');
       } else {
-        // On native, use the standard format
         photo = {
           uri,
           type: 'image/jpeg',
@@ -89,25 +85,24 @@ export default function TimeInScreen() {
         };
       }
 
-      console.log('Submitting time in...');
       await apiService.timeIn(photo);
-      console.log('Time in successful!');
-      
-      Alert.alert(
-        'Success',
-        'Time in recorded successfully!',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ]
-      );
-    } catch (error: any) {
-      console.error('Time in error:', error);
-      Alert.alert('Error', error.message || 'Failed to record time in');
-    } finally {
       setIsLoading(false);
+      
+      if (Platform.OS === 'web') {
+        alert('Time in recorded successfully!');
+        navigation.goBack();
+      } else {
+        Alert.alert('Success', 'Time in recorded successfully!', [
+          { text: 'OK', onPress: () => navigation.goBack() }
+        ]);
+      }
+    } catch (error: any) {
+      setIsLoading(false);
+      if (Platform.OS === 'web') {
+        alert(error.message || 'Failed to record time in');
+      } else {
+        Alert.alert('Error', error.message || 'Failed to record time in');
+      }
     }
   };
 
