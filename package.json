@@ -1,0 +1,28 @@
+{
+  "name": "multi-org-attendance-system",
+  "version": "1.0.0",
+  "description": "Multi-tenant SaaS application for tracking employee attendance with photo verification",
+  "scripts": {
+    "setup": "npm install && npm run db:migrate",
+    "db:migrate": "node scripts/run-migrations.js",
+    "db:test": "node scripts/test-rls.js",
+    "supabase:login": "supabase login",
+    "supabase:link": "supabase link",
+    "supabase:status": "supabase db remote status"
+  },
+  "keywords": [
+    "attendance",
+    "time-tracking",
+    "multi-tenant",
+    "supabase"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "supabase": "^1.142.2"
+  }
+}
